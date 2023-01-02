@@ -20,35 +20,43 @@ function getMatchScore() {
 }
 function getShowLrcIndexs() {
   let indexs = [];
-  console.log("⭐==>props.result.lrc", props.result);
-  // if (props.result.lrc?.length) {
-  //   props.result.lrc.map((item, i) => {
-  //     if (props.keyword && item.includes(props.keyword)) {
-  //       indexs.push(i - 1);
-  //       indexs.push(i);
-  //       indexs.push(i + 1);
-  //     }
-  //   });
-  // }
+  // console.log("⭐==>props.result.lrc", props.result);
+  if (props.result.lrc?.length) {
+    props.result.lrc.map((item, i) => {
+      if (props.keyword && item.includes(props.keyword)) {
+        indexs.push(i - 1);
+        indexs.push(i);
+        indexs.push(i + 1);
+      }
+    });
+  }
+  console.log("⭐indexs==>", indexs);
   return indexs;
+}
+
+function markHints(text) {
+  const regexp = new RegExp(`(${props.keyword})`, "gi");
+  return text.replace(regexp, "<mark>$1</mark>");
 }
 </script>
 <template>
   <el-card class="card-item" shadow="hover">
     <template #header>
       <div class="card-header">
-        <span>{{ result.name }}</span>
+        <span>《{{ result.name }}》</span>
         <el-tag type="success" effect="light" round>
-          <span>匹配度：</span>{{ getMatchScore() }}
+          {{ result.album }}
         </el-tag>
       </div>
     </template>
-    <div class="text item">...</div>
-    <div v-html="result.hints.lrc"></div>
-    <!-- <div v-for="(item, index) in result.lrc" :key="index" class="text item">
-      <span>{{ item }}</span>
-    </div> -->
-    <div class="text item">...</div>
+    <!-- <div class="text item">...</div> -->
+    <!-- <div v-html="result.hints.lrc"></div> -->
+    <div v-for="(item, index) in result.lrc" :key="index" class="text item">
+      <!-- <template v-if="getShowLrcIndexs().includes(index)"> -->
+      <span v-html="markHints(item)"></span>
+      <!-- </template> -->
+    </div>
+    <!-- <div class="text item">...</div> -->
   </el-card>
 </template>
 <style lang="less" scoped>
@@ -56,6 +64,10 @@ function getShowLrcIndexs() {
   width: 300px;
   :deep(.el-card__header) {
     background-color: #f9f9f9;
+  }
+  :deep(.el-card__body) {
+    max-height: 200px;
+    overflow: auto;
   }
   .card-header {
     display: flex;

@@ -4,7 +4,6 @@ import HelloWorld from "./components/HelloWorld.vue";
 import SongCard from "./components/songCard.vue";
 import Footer from "./components/Footer.vue";
 import MiniSearch from "minisearch";
-import { KMP } from "./utils/kmp";
 // import { search } from "./search";
 // import documents from "/jay.json?raw";
 // const aaa = new URL("../public/jay.json", import.meta.url).href;
@@ -12,42 +11,17 @@ import { KMP } from "./utils/kmp";
 /******************************************************
  * 搜索部分
  ****************************************************/
-const searchText = ref("白色");
+const searchText = ref("你微笑浏览");
 const results = ref([]); // 搜索的结果
-const loading = ref(false);
+
 function handleSearch() {
-  loading.value = true;
-  console.time("kmp");
-  results.value = jsonList.value.filter((song) => {
-    const flag = KMP(searchText.value.trim(), song.lrc.join(" "));
-    console.log("⭐KMP==>", flag);
-    return flag > -1;
-  });
-  console.timeEnd("kmp");
-  loading.value = false;
-  console.log("⭐handleSearch==>", results.value);
-}
-
-function doc2json() {
-  let jsonArr = [];
-  documents.value.forEach((doc) => {
-    doc.songs.forEach((song) => {
-      const obj = {
-        name: "",
-        album: doc.name || "",
-        lrc: [],
-      };
-      obj.name = song.name;
-      obj.lrc = song.songLrc;
-      jsonArr.push(obj);
+  results.value = miniSearch.value
+    .search(searchText.value.trim())
+    .map((result) => {
+      result.hints = markHints(result);
+      return result;
     });
-  });
-
-  return jsonArr;
-}
-
-function handleClear() {
-  results.value = [];
+  console.log("⭐handleSearch==>", results.value);
 }
 
 function markHints(result) {
@@ -84,7 +58,6 @@ function markHints(result) {
  * MiniSearch 部分
  ****************************************************/
 const documents = shallowRef([]);
-const jsonList = shallowRef([]);
 const miniSearch = shallowRef(
   new MiniSearch({
     idField: "name",
@@ -108,7 +81,8 @@ async function getJayJson() {
   try {
     const module = await import("../public/jay.json");
     documents.value = module.default;
-    jsonList.value = doc2json();
+    console.log("⭐documents==>", documents.value);
+    miniSearch.value.addAll(documents.value);
   } catch (error) {
     console.error(error);
   } finally {
@@ -130,9 +104,7 @@ onMounted(() => {
         <el-input
           v-model="searchText"
           placeholder="输入标题或者正文"
-          clearable
           @keyup.enter.native="handleSearch"
-          @clear="handleClear"
         >
           <template #append>
             <el-button icon="Search" @click="handleSearch" />
@@ -141,7 +113,7 @@ onMounted(() => {
       </div>
     </el-header>
     <el-main>
-      <div class="card-box" v-loading="loading">
+      <div class="card-box">
         <template v-if="results.length">
           <SongCard
             :keyword="searchText"
@@ -171,7 +143,6 @@ onMounted(() => {
   .search-header {
     width: 400px;
     margin: 0 auto;
-    padding-bottom: 20px;
     h2 {
       text-align: center;
       margin-bottom: 20px;
