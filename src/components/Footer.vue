@@ -3,7 +3,7 @@ import { ref } from "vue";
 </script>
 <template>
   <div class="footer-box">
-    Copyright © 2022 Powered By
+    Copyright © 2022 Powered By &nbsp;
     <el-link href="https://github.com/Daotin/jay-lyric-search"
       >jay-lyric-search</el-link
     >
